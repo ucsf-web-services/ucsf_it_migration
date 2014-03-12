@@ -1,0 +1,11 @@
+name = "Migrate the UCSF IT Website from Drupal 6 to 7."
+description = "Module to migrate old site's content to Drupal 7."
+package = "Migration"
+core = 7.x
+
+dependencies[] = migrate
+
+files[] = ucsf_it_migration.migrate.inc
+files[] = user.inc
+files[] = roles.inc
+files[] = taxonomy.inc
