@@ -8,7 +8,7 @@ function ucsf_it_migration_migrate_api() {
   // common arguments shared by all migrations
   $common_arguments = array(
     'source_version' => 6,
-    'group_name' => 'ucsf it',
+    'group_name' => 'ucsf_it',
     'source_connection' => 'ucsf_it_legacy', // bogus value, see "source_database" for the real deal.
     'source_database' => array(
       'driver' => 'mysql',
@@ -23,7 +23,7 @@ function ucsf_it_migration_migrate_api() {
     'api' => 2,
     // define migration group
     'groups' => array(
-      'ucsf it' => array(
+      'ucsf_it' => array(
         'title' => t("UCSF IT Website Migrations"),
       ),
     ),
@@ -32,7 +32,6 @@ function ucsf_it_migration_migrate_api() {
       'D6Role' => $common_arguments + array(
         'class_name' => 'DrupalRole6Migration',
         'description' => t('Migration of users from Drupal 6'),
-        'group' => 'ucsf it',
         'machine_name' => 'Role',
       ),
       // register user migration
