@@ -6,6 +6,3 @@ core = 7.x
 dependencies[] = migrate
 
 files[] = ucsf_it_migration.migrate.inc
-files[] = user.inc
-files[] = roles.inc
-files[] = taxonomy.inc
