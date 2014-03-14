@@ -25,14 +25,13 @@ function ucsf_it_migration_migrate_api() {
       'D6Role' => $common_arguments + array(
         'class_name' => 'DrupalRole6Migration',
         'description' => t('Migration of users from Drupal 6'),
-        //'machine_name' => 'Role',
       ),
       // register user migration
       'D6User' => $common_arguments + array(
         'class_name' => 'DrupalUser6Migration',
         'description' => t('Migration of users from Drupal 6'),
-        //'machine_name' => 'User',
         'dependencies' => array('D6Role'),
+        'role_migration' => 'D6Role',
       ),
     ),
   );
