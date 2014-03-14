@@ -9,14 +9,7 @@ function ucsf_it_migration_migrate_api() {
   $common_arguments = array(
     'source_version' => 6,
     'group_name' => 'ucsf_it',
-    'source_connection' => 'ucsf_it_legacy', // bogus value, see "source_database" for the real deal.
-    'source_database' => array(
-      'driver' => 'mysql',
-      'database' => 'information_technology',
-      'host' => 'localhost',
-      'user' => 'legacy',
-      'password' => variable_get('ucsf_it_migration_password', ''),
-    ),
+    'source_connection' => 'legacy',
   );
 
   $api = array(
@@ -32,14 +25,14 @@ function ucsf_it_migration_migrate_api() {
       'D6Role' => $common_arguments + array(
         'class_name' => 'DrupalRole6Migration',
         'description' => t('Migration of users from Drupal 6'),
-        'machine_name' => 'Role',
+        //'machine_name' => 'Role',
       ),
       // register user migration
       'D6User' => $common_arguments + array(
         'class_name' => 'DrupalUser6Migration',
         'description' => t('Migration of users from Drupal 6'),
-        'machine_name' => 'User',
-        'dependencies' => array('Role'),
+        //'machine_name' => 'User',
+        'dependencies' => array('D6Role'),
       ),
     ),
   );
@@ -47,20 +40,18 @@ function ucsf_it_migration_migrate_api() {
   // register vocabulary migrations
   $common_vocabulary_arguments = $common_arguments + array(
     'class_name' => 'DrupalTerm6Migration',
-    'soft_dependencies' => array('User'),
+    'soft_dependencies' => array('D6User'),
   );
 
   $vocabulary_arguments = array(
     'D6ItsCategoriesVocabulary' => array(
       'description' => t('Migration of ITS categories from Drupal 6'),
-      'machine_name' => 'ItsCategories',
-      'source_vocabulary' => '2',  // D6 Vocabulary ID
-      'destination_vocabulary' => 'its_categories',
+      'source_vocabulary' => '2',  // D6 vocabulary id
+      'destination_vocabulary' => 'its_categories', // D7 vocabulary machine name
     ),
     'D6NewsTermsVocabulary' => array(
       'description' => t('Migration of News terms from Drupal 6'),
-      'machine_name' => 'NewsTerms',
-      'source_vocabulary' => '6',  // D6 Vocabulary ID
+      'source_vocabulary' => '6',
       'destination_vocabulary' => 'news_terms',
     ),
   );
