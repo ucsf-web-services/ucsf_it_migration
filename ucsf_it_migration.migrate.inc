@@ -38,7 +38,7 @@ function ucsf_it_migration_migrate_api() {
 
   // register vocabulary migrations
   $common_vocabulary_arguments = $common_arguments + array(
-    'class_name' => 'DrupalTerm6Migration',
+    'class_name' => 'UcsfItTerm6Migration',
     'soft_dependencies' => array('D6User'),
   );
 
