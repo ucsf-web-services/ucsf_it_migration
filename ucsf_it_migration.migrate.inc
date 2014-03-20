@@ -25,6 +25,9 @@ function ucsf_it_migration_migrate_api() {
       'D6Role' => $common_arguments + array(
         'class_name' => 'DrupalRole6Migration',
         'description' => t('Migration of users from Drupal 6'),
+        'role_mappings' => array(
+          'admin' => 'administrator',
+        ),
       ),
       // register user migration
       'D6User' => $common_arguments + array(
