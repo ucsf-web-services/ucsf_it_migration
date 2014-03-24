@@ -7,3 +7,4 @@ dependencies[] = migrate
 
 files[] = ucsf_it_migration.migrate.inc
 files[] = migrations/taxonomy.inc
+files[] = migrations/node.inc
