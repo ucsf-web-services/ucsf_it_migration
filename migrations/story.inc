@@ -21,7 +21,6 @@ class UcsfItStoryNode6Migration extends UcsfItNode6Migration
     $this->addUnmigratedDestinations(array('field_tags', 'field_tags:source_type', 'field_tags:create_term', 'field_tags:ignore_case'));
 
     $this->addUnmigratedSources(array('revision', 'revision_uid', 'log'));
-
   }
 
   /**
@@ -32,7 +31,12 @@ class UcsfItStoryNode6Migration extends UcsfItNode6Migration
   protected function query()
   {
     $query = parent::query();
-    // @todo Augment query to pull in columns from  statistics and pathauto tables. [ST 2014/03/24]
+    // add node stats
+    $query->leftJoin('node_counter', 'nc', 'n.nid = nc.nid');
+    $query->addField('nc', 'timestamp');
+    $query->addField('nc', 'daycount');
+    $query->addField('nc', 'totalcount');
+
     return $query;
   }
 
@@ -47,6 +51,5 @@ class UcsfItStoryNode6Migration extends UcsfItNode6Migration
       return FALSE;
     }
     // @todo Implement. [ST 2014/03/24]
-
   }
 }
