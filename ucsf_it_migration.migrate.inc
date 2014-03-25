@@ -65,10 +65,8 @@ function ucsf_it_migration_migrate_api() {
 
   // register node migrations
   $node_arguments = $common_arguments + array(
-    array(
       'user_migration' => 'D6User',
       'default_uid' => 0,
-    ),
   );
 
   $api['migrations']['D6StoryNode'] = $node_arguments + array(
