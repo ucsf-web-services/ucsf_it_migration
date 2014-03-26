@@ -84,7 +84,6 @@ function ucsf_it_migration_migrate_api() {
     'destination_type' => 'article',
     'description' => t('Migration of Story nodes from Drupal 6'),
     'class_name' => 'UcsfItStoryNode6Migration',
-    'dependencies' => array('D6ItsCategoriesVocabulary'),
   );
 
   $api['migrations']['D6PageNode'] = $node_arguments + array(
