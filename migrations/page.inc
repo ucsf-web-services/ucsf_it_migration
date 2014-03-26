@@ -17,8 +17,6 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration
   public function __construct(array $arguments)
   {
     parent::__construct($arguments);
-
-    $this->addUnmigratedDestinations(array());
   }
 
   /**
