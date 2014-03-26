@@ -63,6 +63,16 @@ function ucsf_it_migration_migrate_api() {
     $api['migrations'][$key] = $arguments;
   }
 
+  // register file migration
+  $api['migrations']['D6File'] = $common_arguments + array(
+      'description' => t('Migration of files from Drupal 6'),
+      'class_name' => 'DrupalFile6Migration',
+      'user_migration' => 'D6User',
+      'default_uid' => 1,
+      'source_dir' => '/home/stefan/dev/projects/ucsf/docroot',
+      'destination_dir' => '/home/stefan/dev/projects/ucsfp/docroot',
+  );
+
   // register node migrations
   $node_arguments = $common_arguments + array(
       'user_migration' => 'D6User',
