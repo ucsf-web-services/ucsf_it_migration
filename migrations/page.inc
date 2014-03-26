@@ -24,23 +24,6 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration
   }
 
   /**
-   * @return SelectQueryInterface
-   *
-   * @see DrupalNodeMigration::query()
-   */
-  protected function query()
-  {
-    $query = parent::query();
-    // add node stats
-    $query->leftJoin('node_counter', 'nc', 'n.nid = nc.nid');
-    $query->addField('nc', 'timestamp');
-    $query->addField('nc', 'daycount');
-    $query->addField('nc', 'totalcount');
-
-    return $query;
-  }
-
-  /**
    * @param array $row
    * @return boolean
    *

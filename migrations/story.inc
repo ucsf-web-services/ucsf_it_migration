@@ -26,21 +26,4 @@ class UcsfItStoryNode6Migration extends UcsfItNode6Migration
     $this->addUnmigratedSources(array('revision', 'revision_uid', 'log', 'upload', 'upload:description', 'upload:list',
       'upload:weight'));
   }
-
-  /**
-   * @return SelectQueryInterface
-   *
-   * @see DrupalNodeMigration::query()
-   */
-  protected function query()
-  {
-    $query = parent::query();
-    // add node stats
-    $query->leftJoin('node_counter', 'nc', 'n.nid = nc.nid');
-    $query->addField('nc', 'timestamp');
-    $query->addField('nc', 'daycount');
-    $query->addField('nc', 'totalcount');
-
-    return $query;
-  }
 }

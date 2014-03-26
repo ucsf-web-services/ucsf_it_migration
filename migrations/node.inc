@@ -24,4 +24,21 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration
 
     $this->setIssuePattern('https://bitbucket.org/ucsfdrupal/ucsf_it_migration/issue/:id:');
   }
+
+  /**
+   * @return SelectQueryInterface
+   *
+   * @see DrupalNodeMigration::query()
+   */
+  protected function query()
+  {
+    $query = parent::query();
+    // add node stats
+    $query->leftJoin('node_counter', 'nc', 'n.nid = nc.nid');
+    $query->addField('nc', 'timestamp');
+    $query->addField('nc', 'daycount');
+    $query->addField('nc', 'totalcount');
+
+    return $query;
+  }
 }
