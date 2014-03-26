@@ -43,17 +43,4 @@ class UcsfItStoryNode6Migration extends UcsfItNode6Migration
 
     return $query;
   }
-
-  /**
-   * @param array $row
-   * @return boolean
-   *
-   * @see DrupalNodeMigration::prepareRow()
-   */
-  public function prepareRow($row) {
-    if (parent::prepareRow($row) === FALSE) {
-      return FALSE;
-    }
-    // @todo Implement. [ST 2014/03/24]
-  }
 }
