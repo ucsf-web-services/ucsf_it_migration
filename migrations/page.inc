@@ -19,8 +19,6 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration
     parent::__construct($arguments);
 
     $this->addUnmigratedDestinations(array());
-
-    $this->addUnmigratedSources(array('revision', 'revision_uid', 'log'));
   }
 
   /**
