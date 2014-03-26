@@ -88,7 +88,7 @@ function ucsf_it_migration_migrate_api() {
 
   $api['migrations']['D6PageNode'] = $node_arguments + array(
       'source_type' => 'page',
-      'destination_type' => 'basic_page',
+      'destination_type' => 'page',
       'description' => t('Migration of Page nodes from Drupal 6'),
       'class_name' => 'UcsfItPageNode6Migration',
       'dependencies' => array('D6ItsCategoriesVocabulary'),
