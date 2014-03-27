@@ -9,13 +9,11 @@
  *
  * @see DrupalNode6Migration
  */
-abstract class UcsfItNode6Migration extends DrupalNode6Migration
-{
+abstract class UcsfItNode6Migration extends DrupalNode6Migration {
   /**
    * @param array $arguments
    */
-  public function __construct(array $arguments)
-  {
+  public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     $this->team = array(
@@ -34,8 +32,7 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration
    *
    * @see DrupalNodeMigration::query()
    */
-  protected function query()
-  {
+  protected function query() {
     $query = parent::query();
     // add node stats
     $query->leftJoin('node_counter', 'nc', 'n.nid = nc.nid');

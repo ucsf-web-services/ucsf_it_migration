@@ -9,8 +9,7 @@
  *
  * @see UcsfItNode6Migration
  */
-class UcsfItStoryNode6Migration extends UcsfItNode6Migration
-{
+class UcsfItStoryNode6Migration extends UcsfItNode6Migration {
   /**
    * @param array $arguments
    */
