@@ -69,8 +69,7 @@ function ucsf_it_migration_migrate_api() {
       'class_name' => 'DrupalFile6Migration',
       'user_migration' => 'D6User',
       'default_uid' => 1,
-      'source_dir' => '/home/stefan/dev/projects/ucsf/docroot',
-      'destination_dir' => '/home/stefan/dev/projects/ucsfp/docroot',
+      'source_dir' => '/home/stefan/dev/projects/ucsf/docroot/sites/it.ucsf.edu/files',
   );
 
   // register node migrations
@@ -91,7 +90,6 @@ function ucsf_it_migration_migrate_api() {
       'destination_type' => 'page',
       'description' => t('Migration of Page nodes from Drupal 6'),
       'class_name' => 'UcsfItPageNode6Migration',
-      'dependencies' => array('D6ItsCategoriesVocabulary'),
   );
 
   return $api;
