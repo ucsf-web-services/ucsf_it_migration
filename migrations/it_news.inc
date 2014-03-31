@@ -14,7 +14,25 @@ class UcsfItNewsNode6Migration extends UcsfItNode6Migration {
 
   public function __construct(array $arguments) {
     parent::__construct($arguments);
-    // @todo implement [ST 03/31/2014]
+
+    // map image and attachment fields
+    // @link https://drupal.org/node/1819704
+    // @link http://drupal.stackexchange.com/a/58637/1801
+    $this->addFieldMapping('field_it_news_image', 'image_fid')->sourceMigration('D6File');
+    $this->addFieldMapping('field_it_news_image:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_it_news_image:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_it_news_image:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addFieldMapping('field_it_news_attachments', 'attachment_fids')->separator(',')->sourceMigration('D6File');
+    $this->addFieldMapping('field_it_news_attachments:file_class')->defaultValue('MigrateFileFid');
+    $this->addFieldMapping('field_it_news_attachments:preserve_files')->defaultValue(TRUE);
+    $this->addFieldMapping('field_it_news_attachments:language')->defaultValue(LANGUAGE_NONE);
+
+    $this->addUnmigratedSources(array('field_attached_file', 'field_attached_file:list'));
+    $this->addUnmigratedSources(array('field_news_image', 'field_news_image:list', 'field_news_image:description'));
+
+    $this->addUnmigratedDestinations(array('field_it_news_attachments:description', 'field_it_news_attachments:display'));
+    $this->addUnmigratedDestinations(array('field_it_news_image:alt', 'field_it_news_image:title'));
   }
 
   /**
@@ -23,7 +41,12 @@ class UcsfItNewsNode6Migration extends UcsfItNode6Migration {
    */
   public function query() {
     $query = parent::query();
-    // @todo implement [ST 03/31/2014]
+    // get the file-ids for associated images and attachments here
+    $query->leftJoin('content_field_news_image', 'cfni', 'cfni.vid = n.vid');
+    $query->addField('cfni', 'field_news_image_fid', 'image_fid');
+    $query->leftJoin('content_field_attached_file', 'cfa', 'cfa.vid = n.vid');
+    $query->addExpression('GROUP_CONCAT(DISTINCT cfa.field_attached_file_fid)', 'attachment_fids');
+    $query->groupBy('n.vid');
     return $query;
   }
 }
