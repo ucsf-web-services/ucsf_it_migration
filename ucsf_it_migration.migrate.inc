@@ -90,6 +90,7 @@ function ucsf_it_migration_migrate_api() {
     'destination_type' => 'page',
     'description' => t('Migration of Page nodes from Drupal 6'),
     'class_name' => 'UcsfItPageNode6Migration',
+    'dependencies' => array('D6File'),
   );
 
   $api['migrations']['D6NewsNode'] = $node_arguments + array(
@@ -97,6 +98,7 @@ function ucsf_it_migration_migrate_api() {
     'destination_type' => 'it_news',
     'description' => t('Migration of IT News nodes from Drupal 6'),
     'class_name' => 'UcsfItNewsNode6Migration',
+    'dependencies' => array('D6File', 'D6NewsTermsVocabulary'),
   );
 
   return $api;
