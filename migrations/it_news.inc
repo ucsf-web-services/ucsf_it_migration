@@ -28,6 +28,10 @@ class UcsfItNewsNode6Migration extends UcsfItNode6Migration {
     $this->addFieldMapping('field_it_news_attachments:preserve_files')->defaultValue(TRUE);
     $this->addFieldMapping('field_it_news_attachments:language')->defaultValue(LANGUAGE_NONE);
 
+    $this->addFieldMapping('field_it_news_taxonomy', '6')->sourceMigration('D6NewsTermsVocabulary')->arguments(
+      array('source_type' => 'tid')
+    );
+
     $this->addUnmigratedSources(array('field_attached_file', 'field_attached_file:list'));
     $this->addUnmigratedSources(array('field_news_image', 'field_news_image:list', 'field_news_image:description'));
 
