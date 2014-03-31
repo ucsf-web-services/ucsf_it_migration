@@ -28,9 +28,8 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
   }
 
   /**
-   * @return SelectQueryInterface
-   *
    * @see DrupalNodeMigration::query()
+   * @return SelectQueryInterface
    */
   protected function query() {
     $query = parent::query();
