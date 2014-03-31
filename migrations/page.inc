@@ -50,7 +50,7 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
   }
 
   /**
-   * @see DrupalTerm6Migration::query()
+   * @see DrupalNodeMigration::query()
    * @return SelectQueryInterface
    */
   protected function query() {
