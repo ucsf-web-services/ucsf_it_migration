@@ -65,17 +65,17 @@ function ucsf_it_migration_migrate_api() {
 
   // register file migration
   $api['migrations']['D6File'] = $common_arguments + array(
-      'description' => t('Migration of files from Drupal 6'),
-      'class_name' => 'DrupalFile6Migration',
-      'user_migration' => 'D6User',
-      'default_uid' => 1,
-      'source_dir' => '/home/stefan/dev/projects/ucsf/docroot/sites/it.ucsf.edu/files',
+    'description' => t('Migration of files from Drupal 6'),
+    'class_name' => 'DrupalFile6Migration',
+    'user_migration' => 'D6User',
+    'default_uid' => 1,
+    'source_dir' => '/home/stefan/dev/projects/ucsf/docroot/sites/it.ucsf.edu/files',
   );
 
   // register node migrations
   $node_arguments = $common_arguments + array(
-      'user_migration' => 'D6User',
-      'default_uid' => 0,
+    'user_migration' => 'D6User',
+    'default_uid' => 0,
   );
 
   $api['migrations']['D6StoryNode'] = $node_arguments + array(
@@ -86,11 +86,28 @@ function ucsf_it_migration_migrate_api() {
   );
 
   $api['migrations']['D6PageNode'] = $node_arguments + array(
-      'source_type' => 'page',
-      'destination_type' => 'page',
-      'description' => t('Migration of Page nodes from Drupal 6'),
-      'class_name' => 'UcsfItPageNode6Migration',
+    'source_type' => 'page',
+    'destination_type' => 'page',
+    'description' => t('Migration of Page nodes from Drupal 6'),
+    'class_name' => 'UcsfItPageNode6Migration',
+    'dependencies' => array('D6File'),
   );
+
+  $api['migrations']['D6NewsNode'] = $node_arguments + array(
+    'source_type' => 'it_news',
+    'destination_type' => 'it_news',
+    'description' => t('Migration of IT News nodes from Drupal 6'),
+    'class_name' => 'UcsfItNewsNode6Migration',
+    'dependencies' => array('D6File', 'D6NewsTermsVocabulary'),
+  );
+
+  $api['migrations']['D6HowDoNode'] = $node_arguments + array(
+      'source_type' => 'it_how_to',
+      'destination_type' => 'it_how_do',
+      'description' => t('Migration of IT How Do nodes from Drupal 6'),
+      'class_name' => 'UcsfItHowDoNode6Migration',
+      'dependencies' => array('D6File', 'D6ItsCategoriesVocabulary'),
+    );
 
   return $api;
 }

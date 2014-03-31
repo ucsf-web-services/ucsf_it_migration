@@ -10,3 +10,5 @@ files[] = migrations/taxonomy.inc
 files[] = migrations/node.inc
 files[] = migrations/story.inc
 files[] = migrations/page.inc
+files[] = migrations/it_news.inc
+files[] = migrations/it_how_do.inc
