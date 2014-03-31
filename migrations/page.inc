@@ -19,6 +19,7 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     // map image and attachment fields
     // @link https://drupal.org/node/1819704
     // @link http://drupal.stackexchange.com/a/58637/1801
+
     $this->addFieldMapping('field_page_images', 'image_fids')->separator(',')->sourceMigration('D6File');
     $this->addFieldMapping('field_page_images:file_class')->defaultValue('MigrateFileFid');
     $this->addFieldMapping('field_page_images:preserve_files')->defaultValue(TRUE);
@@ -34,6 +35,10 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
 
     $this->addUnmigratedDestinations(array('field_page_images:alt', 'field_page_images:title',
       'field_page_attachments:description', 'field_page_attachments:display'));
+
+    $this->addFieldMapping('field_page_related_page', 'ref_nids');
+
+    $this->addUnmigratedSources(array('field_related_page', 'related_nids'));
   }
 
   /**
@@ -46,7 +51,17 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-    // @todo Implement. [ST 2014/03/24]
+
+    if (! empty($row->related_nids)) {
+      $source_ids = explode(',', $row->related_nids);
+      foreach ($source_ids as $source_id) {
+        $content_type = $this->getContentTypeByNid($source_id);
+        $migration = $this->getSourceMigrationByContentType($content_type);
+        if ($migration) {
+          $row->ref_nids[] = $this->handleSourceMigration($migration, $source_id);
+        }
+      }
+    }
   }
 
   /**
@@ -61,6 +76,9 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     $query->leftJoin('content_field_attached_file', 'cfa', 'cfa.vid = n.vid');
     $query->addExpression('GROUP_CONCAT(DISTINCT cfa.field_attached_file_fid)', 'attachment_fids');
     $query->groupBy('n.vid');
+    $query->leftJoin('content_field_related_page', 'cfrp', 'cfrp.vid = n.vid');
+    $query->leftJoin('node', 'rn', 'rn.nid = cfrp.field_related_page_nid');
+    $query->addExpression('GROUP_CONCAT(DISTINCT rn.nid)', 'related_nids');
     return $query;
   }
 }

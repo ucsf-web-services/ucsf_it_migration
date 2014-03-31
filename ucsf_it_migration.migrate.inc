@@ -101,5 +101,13 @@ function ucsf_it_migration_migrate_api() {
     'dependencies' => array('D6File', 'D6NewsTermsVocabulary'),
   );
 
+  $api['migrations']['D6HowDoNode'] = $node_arguments + array(
+      'source_type' => 'it_how_to',
+      'destination_type' => 'it_how_do',
+      'description' => t('Migration of IT How Do nodes from Drupal 6'),
+      'class_name' => 'UcsfItHowDoNode6Migration',
+      'dependencies' => array('D6File', 'D6ItsCategoriesVocabulary'),
+    );
+
   return $api;
 }
