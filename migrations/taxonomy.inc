@@ -9,13 +9,11 @@
  *
  * @see DrupalTerm6Migration
  */
-class UcsfItTerm6Migration extends DrupalTerm6Migration
-{
+class UcsfItTerm6Migration extends DrupalTerm6Migration {
   /**
    * @param array $arguments
    */
-  public function __construct(array $arguments)
-  {
+  public function __construct(array $arguments) {
     parent::__construct($arguments);
 
     $this->team = array(
@@ -41,8 +39,7 @@ class UcsfItTerm6Migration extends DrupalTerm6Migration
    * @see DrupalTerm6Migration::query()
    * @return SelectQueryInterface
    */
-  protected function query()
-  {
+  protected function query() {
     $query = parent::query();
     $query->leftJoin("term_synonym", 'ts', 'ts.tid = td.tid');
     $query->addExpression('GROUP_CONCAT(DISTINCT ts.name SEPARATOR \';\')', 'synonyms');
