@@ -62,11 +62,9 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
   }
 
   /**
-   * Returns the source migration mapped to a given content type.
-   * @param string $content_type The content type's machine name.
+   * Returns the source migration mapped to a given legacy (D6) content type.
+   * @param string $content_type The legacy content type's machine name.
    * @return string|boolean The source migration name, or FALSE if none was found.
-   *
-   * @todo Map out any remaining content types [ST 2014/03/31].
    */
   protected function getSourceMigrationByContentType($content_type) {
     $migration = FALSE;
@@ -82,6 +80,33 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
         break;
       case 'it_how_to' :
         $migration = 'D6HowDoNode';
+        break;
+      case 'it_outage' :
+        $migration = 'D6StatusNode';
+        break;
+      case 'it_service' :
+        $migration = 'D6ServiceNode';
+        break;
+      case 'it_additional_information' :
+        $migration = 'D6AdditionalInfoNode';
+        break;
+      case 'it_service_tutorial' :
+        $migration = 'D6TutorialNode';
+        break;
+      case 'it_category_description' :
+        $migration = 'D6CategoryDescriptionNode';
+        break;
+      case 'it_project' :
+        $migration = 'D6ProjectNode';
+        break;
+      case 'it_project_status' :
+        $migration = 'D6ProjectStatusNode';
+        break;
+      case 'it_team' :
+        $migration = 'D6TeamNode';
+        break;
+      case 'policy_standard' :
+        $migration = 'D6PolicyNode';
         break;
       default :
         // do nothing
