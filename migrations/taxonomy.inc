@@ -20,14 +20,8 @@ class UcsfItTerm6Migration extends DrupalTerm6Migration {
       new MigrateTeamMember('Stefan Topfstedt', 'stefan.topfstedt@ucsf.edu', t('Migration Implementer')),
     );
 
-
-    $this->setIssuePattern('https://bitbucket.org/ucsfdrupal/ucsf_it_migration/issue/:id:');
-
     $this->addFieldMapping('synonyms_synonyms', 'synonyms')
       ->description(t('Preserve synonyms during taxonomy term migration.'))
-      // ->issueGroup('Customizations')
-      ->issueNumber('1')
-      ->issuePriority(MigrateFieldMapping::ISSUE_PRIORITY_OK)
       ->separator(';');
 
     $this->addFieldMapping('synonyms_synonyms:language')
