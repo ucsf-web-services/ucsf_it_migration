@@ -14,6 +14,9 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
    * @param array $arguments
    */
   public function __construct(array $arguments) {
+
+    $this->sourceFields['ref_nids'] = 'NIDs of referenced nodes.';
+
     parent::__construct($arguments);
 
     // map image and attachment fields
