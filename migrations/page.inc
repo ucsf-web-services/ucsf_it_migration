@@ -22,7 +22,6 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     // map image and attachment fields
     // @link https://drupal.org/node/1819704
     // @link http://drupal.stackexchange.com/a/58637/1801
-
     $this->addFieldMapping('field_page_images', 'image_fids')->separator(',')->sourceMigration('D6File');
     $this->addFieldMapping('field_page_images:file_class')->defaultValue('MigrateFileFid');
     $this->addFieldMapping('field_page_images:preserve_files')->defaultValue(TRUE);
@@ -33,39 +32,16 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     $this->addFieldMapping('field_page_attachments:preserve_files')->defaultValue(TRUE);
     $this->addFieldMapping('field_page_attachments:language')->defaultValue(LANGUAGE_NONE);
 
-    $this->addUnmigratedSources(array('field_attached_file', 'field_attached_file:list', 'field_image',
-      'field_image:list'));
-
-    $this->addUnmigratedDestinations(array('field_page_images:alt', 'field_page_images:title',
-      'field_page_attachments:description', 'field_page_attachments:display'));
-
+    // map related nodes
     $this->addFieldMapping('field_page_related_page', 'ref_nids');
 
-    $this->addUnmigratedSources(array('field_related_page', 'related_nids'));
+    // DNM
+    $this->addUnmigratedSources(array('field_attached_file', 'field_attached_file:list', 'field_image',
+      'field_image:list', 'field_related_page', 'related_nids'));
+    $this->addUnmigratedDestinations(array('field_page_images:alt', 'field_page_images:title',
+      'field_page_attachments:description', 'field_page_attachments:display'));
   }
 
-  /**
-   * @param array $row
-   * @return boolean
-   *
-   * @see DrupalNodeMigration::prepareRow()
-   */
-  public function prepareRow($row) {
-    if (parent::prepareRow($row) === FALSE) {
-      return FALSE;
-    }
-
-    if (! empty($row->related_nids)) {
-      $source_ids = explode(',', $row->related_nids);
-      foreach ($source_ids as $source_id) {
-        $content_type = $this->getContentTypeByNid($source_id);
-        $migration = $this->getSourceMigrationByContentType($content_type);
-        if ($migration) {
-          $row->ref_nids[] = $this->handleSourceMigration($migration, $source_id);
-        }
-      }
-    }
-  }
 
   /**
    * @see DrupalNodeMigration::query()
@@ -79,9 +55,35 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     $query->leftJoin('content_field_attached_file', 'cfa', 'cfa.vid = n.vid');
     $query->addExpression('GROUP_CONCAT(DISTINCT cfa.field_attached_file_fid)', 'attachment_fids');
     $query->groupBy('n.vid');
+    // get nids for related nodes.
     $query->leftJoin('content_field_related_page', 'cfrp', 'cfrp.vid = n.vid');
     $query->leftJoin('node', 'rn', 'rn.nid = cfrp.field_related_page_nid');
     $query->addExpression('GROUP_CONCAT(DISTINCT rn.nid)', 'related_nids');
     return $query;
+  }
+
+  /**
+   * @param array $row
+   * @return boolean
+   *
+   * @see DrupalNodeMigration::prepareRow()
+   */
+  public function prepareRow($row) {
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    // process related nids
+    if (! empty($row->related_nids)) {
+      $source_ids = explode(',', $row->related_nids);
+      foreach ($source_ids as $source_id) {
+        $content_type = $this->getContentTypeByNid($source_id); // figure out the content type of each related node
+        // figure out the migration responsible for the identified legacy content type
+        $migration = $this->getSourceMigrationByContentType($content_type);
+        // handle it. this should return a node id in the migration destination.
+        if ($migration) {
+          $row->ref_nids[] = $this->handleSourceMigration($migration, $source_id);
+        }
+      }
+    }
   }
 }
