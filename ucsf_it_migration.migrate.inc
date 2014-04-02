@@ -69,6 +69,9 @@ function ucsf_it_migration_migrate_api() {
     'class_name' => 'DrupalFile6Migration',
     'user_migration' => 'D6User',
     'default_uid' => 1,
+    // KLUDGE!
+    // Hardwired path to my local sites directory in the D6 environment.
+    // @todo See if this can be made more portable. [ST 2014/04/02]
     'source_dir' => '/home/stefan/dev/projects/ucsf/docroot/sites/it.ucsf.edu/files',
   );
 
