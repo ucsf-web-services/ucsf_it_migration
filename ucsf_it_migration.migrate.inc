@@ -93,6 +93,7 @@ function ucsf_it_migration_migrate_api() {
     'destination_type' => 'it_outage',
     'description' => t('Migration of IT Status nodes from Drupal 6'),
     'class_name' => 'UcsfItStatusNode6Migration',
+    'dependencies' => array('D6ItsCategoriesVocabulary'),
   );
 
   $api['migrations']['D6PageNode'] = $node_arguments + array(
