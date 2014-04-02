@@ -56,15 +56,13 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     $query->addExpression('GROUP_CONCAT(DISTINCT cfa.field_attached_file_fid)', 'attachment_fids');
     $query->groupBy('n.vid');
     // get nids for related nodes.
-    $query->leftJoin('content_field_related_page', 'cfrp', 'cfrp.vid = n.vid');
-    $query->leftJoin('node', 'rn', 'rn.nid = cfrp.field_related_page_nid');
-    $query->addExpression('GROUP_CONCAT(DISTINCT rn.nid)', 'related_nids');
+    $query = $this->addRelatedNodesToQuery($query);
     return $query;
   }
 
   /**
-   * @param array $row
-   * @return boolean
+   * @param $row
+   * @return bool
    *
    * @see DrupalNodeMigration::prepareRow()
    */
@@ -72,18 +70,6 @@ class UcsfItPageNode6Migration extends UcsfItNode6Migration {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
     }
-    // process related nids
-    if (! empty($row->related_nids)) {
-      $source_ids = explode(',', $row->related_nids);
-      foreach ($source_ids as $source_id) {
-        $content_type = $this->getContentTypeByNid($source_id); // figure out the content type of each related node
-        // figure out the migration responsible for the identified legacy content type
-        $migration = $this->getSourceMigrationByContentType($content_type);
-        // handle it. this should return a node id in the migration destination.
-        if ($migration) {
-          $row->ref_nids[] = $this->handleSourceMigration($migration, $source_id);
-        }
-      }
-    }
+    $row->ref_nids = $this->processRelatedNids($row->related_nids);
   }
 }

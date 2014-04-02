@@ -111,4 +111,42 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
     }
     return $migration;
   }
+
+  /**
+   * Helper method that maps source node references to target entity references.
+   * Call this method from within your <code>prepareRow()</code> implementation.
+   * Source node references are expected to be passed as an array in the <code>related_nids</code>
+   * @param string $related_nids A comma-separated list of source node ids.
+   * @return array An array of mapped target node ids.
+   */
+  protected function processRelatedNids($related_nids) {
+    $ref_nids = array();
+    // process related nids
+    if ($related_nids) {
+      $source_ids = explode(',', $related_nids);
+      foreach ($source_ids as $source_id) {
+        $content_type = $this->getContentTypeByNid($source_id); // figure out the content type of each related node
+        // figure out the migration responsible for the identified legacy content type
+        $migration = $this->getSourceMigrationByContentType($content_type);
+        // handle it. this should return a node id in the migration destination.
+        if ($migration) {
+          $ref_nids[] = $this->handleSourceMigration($migration, $source_id);
+        }
+      }
+    }
+    return $ref_nids;
+  }
+
+  /**
+   * Helper method that augments a given query to retrieve NIDs of related nodes.
+   * Call this method from within your <code>query()</code> implementation.
+   * @param SelectQueryInterface $query The query object.
+   * @return SelectQueryInterface The augmented query object.
+   */
+  protected function addRelatedNodesToQuery(SelectQueryInterface $query) {
+    $query->leftJoin('content_field_related_page', 'cfrp', 'cfrp.vid = n.vid');
+    $query->leftJoin('node', 'rn', 'rn.nid = cfrp.field_related_page_nid');
+    $query->addExpression('GROUP_CONCAT(DISTINCT rn.nid)', 'related_nids');
+    return $query;
+  }
 }
