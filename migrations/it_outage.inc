@@ -46,6 +46,12 @@ class UcsfItStatusNode6Migration extends UcsfItNode6Migration {
     $this->addFieldMapping('field_it_status_outage_date:timezone')->defaultValue('America/Los_Angeles'); // we are HERE!
   }
 
+  /**
+   * @param $row
+   * @return bool
+   *
+   * @see DrupalNodeMigration::prepareRow()
+   */
   public function prepareRow($row) {
     if (parent::prepareRow($row) === FALSE) {
       return FALSE;
