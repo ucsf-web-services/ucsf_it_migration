@@ -98,6 +98,5 @@ class UcsfItServiceNode6Migration extends UcsfItNode6Migration {
       return FALSE;
     }
     $row->ref_nids = $this->processRelatedNids($row->related_nids);
-    $row->mapped_tids = array('3', '6', '8', '9');
   }
 }
