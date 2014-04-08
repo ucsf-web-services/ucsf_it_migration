@@ -23,6 +23,8 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
     // always list revision info and whatever "upload" is as "do not migrate" source fields.
     $this->addUnmigratedSources(array('revision', 'revision_uid', 'log', 'upload', 'upload:description', 'upload:list',
       'upload:weight'));
+
+    $this->addFieldMapping('body:format', NULL, FALSE)->defaultValue('webedit');
   }
 
   /**
