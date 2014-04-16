@@ -3,8 +3,8 @@ description = "Module to migrate old site's content to Drupal 7."
 package = "Migration"
 core = 7.x
 
-dependencies[] = migrate
-dependencies[] = migrate_d2d
+dependencies[] = migrate (>=7.x-2.6-rc1)
+dependencies[] = migrate_d2d (>=7.x-2.1-beta1)
 
 files[] = ucsf_it_migration.migrate.inc
 files[] = migrations/taxonomy.inc
