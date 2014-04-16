@@ -4,6 +4,7 @@ package = "Migration"
 core = 7.x
 
 dependencies[] = migrate
+dependencies[] = migrate_d2d
 
 files[] = ucsf_it_migration.migrate.inc
 files[] = migrations/taxonomy.inc
