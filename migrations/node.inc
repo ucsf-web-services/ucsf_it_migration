@@ -151,4 +151,29 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
     $query->addExpression('GROUP_CONCAT(DISTINCT rn.nid)', 'related_nids');
     return $query;
   }
+
+  /**
+   * Implementation of Migration::createStub().
+   *
+   * @param $migration
+   * @return array|bool
+   */
+  protected function createStub($migration) {
+    migrate_instrument_start('UcsfItNode6Migration::createStub');
+    $node = new stdClass();
+    $node->title = t('Stub');
+    $node->body = array(LANGUAGE_NONE => array(array("value" => t('Stub body'))));
+    $node->type = $this->destination->getBundle();
+    $node->uid = 1;
+    // turn off pathauto during migration
+    $node->path = array('pathauto' => FALSE);
+    node_save($node);
+    migrate_instrument_stop('UcsfItNode6Migration::createStub');
+    if (isset($node->nid)) {
+      return array($node->nid);
+    }
+    else {
+      return FALSE;
+    }
+  }
 }
