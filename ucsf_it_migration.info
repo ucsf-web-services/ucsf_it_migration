@@ -22,3 +22,4 @@ files[] = migrations/it_service.inc
 files[] = migrations/it_service_tutorial.inc
 files[] = migrations/it_team.inc
 files[] = migrations/policy_or_standard.inc
+files[] = migrations/redirect.inc
