@@ -184,7 +184,7 @@ function ucsf_it_migration_migrate_api() {
     'dependencies' => array('D6File', 'D6ItsCategoriesVocabulary'),
   );
 
-  $api['migrations']['D6Redirect'] = $node_arguments + array(
+  $api['migrations']['D6Redirect'] = $common_arguments + array(
       'description' => t('Migration of path redirects.'),
       'class_name' => 'UcsfItRedirectMigration',
     );
