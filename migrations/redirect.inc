@@ -26,6 +26,10 @@ class UcsfItRedirectMigration extends DrupalMigration {
 */
     );
 
+    // Create our three main objects - source, destination, and map
+    $this->source = new MigrateSourceSQL($this->query(), $this->sourceFields,
+      NULL, $this->sourceOptions);
+
     $this->destination = new UcsfItRedirectMigrationDestination();
 
     $this->map = new MigrateSQLMap($this->machineName,
