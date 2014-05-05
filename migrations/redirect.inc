@@ -11,7 +11,7 @@ class UcsfItRedirectMigration extends DrupalMigration {
    * @param array $arguments
    */
   public function __construct($arguments) {
-    parent::__construct($arguments);
+
 
     $this->sourceFields = array(
       'rid' => t('Redirect ID'),
@@ -26,13 +26,15 @@ class UcsfItRedirectMigration extends DrupalMigration {
 */
     );
 
+    parent::__construct($arguments);
+
     // Create our three main objects - source, destination, and map
-    $this->source = new MigrateSourceSQL($this->query(), $this->sourceFields,
-      NULL, $this->sourceOptions);
+    $this->setSource(new MigrateSourceSQL($this->query(), $this->sourceFields,
+      NULL, $this->sourceOptions));
 
-    $this->destination = new UcsfItRedirectMigrationDestination();
+    $this->setDestination(new UcsfItRedirectMigrationDestination());
 
-    $this->map = new MigrateSQLMap($this->machineName,
+    $this->setMap(new MigrateSQLMap($this->machineName,
       array(
         'rid' => array('type' => 'int',
           'unsigned' => TRUE,
@@ -42,7 +44,7 @@ class UcsfItRedirectMigration extends DrupalMigration {
         ),
       ),
       UcsfItRedirectMigrationDestination::getKeySchema()
-    );
+    ));
   }
 
   /**
@@ -108,9 +110,40 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
    * @see MigrateDestination::import()
    * @param stdClass $object
    * @param stdClass $row
+   * @return array the id of the migrated redirect record.
+   *
+   * @todo Adjust internal node paths. [ST 2014/05/05]
    */
   public function import(stdClass $object, stdClass $row) {
 
-    // @todo implement. [ST 2014/04/23]
+    // hardwired. good enough for now!
+    $redirect_defaults = array(
+      'status_code' => 301,
+      'uid' => 1,
+      'language' => LANGUAGE_NONE,
+    );
+
+    $redirect = new stdClass();
+    redirect_object_prepare($redirect, $redirect_defaults);
+    $redirect->redirect = $row->redirect;
+    $redirect->source = $row->source;
+
+    // save the redirect.
+    redirect_save($redirect);
+
+    // return the id of the newly created redirect record.
+    return array($redirect->rid);
+  }
+
+  /**
+   * Rolls back redirect migration.
+   * @param array $rids A list of ids belonging to migrated redirects.
+   * @see redirect_delete_multiple()
+   */
+  public function bulkRollback(array $rids) {
+    migrate_instrument_start('redirect_delete_multiple');
+    redirect_delete_multiple($rids);
+    migrate_instrument_stop('redirect_delete_multiple');
   }
 }
+
