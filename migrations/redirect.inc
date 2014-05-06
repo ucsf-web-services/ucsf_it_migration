@@ -12,7 +12,6 @@ class UcsfItRedirectMigration extends DrupalMigration {
    */
   public function __construct($arguments) {
 
-
     $this->sourceFields = array(
       'rid' => t('Redirect ID'),
 /*
@@ -65,6 +64,27 @@ class UcsfItRedirectMigration extends DrupalMigration {
  */
 class UcsfItRedirectMigrationDestination extends MigrateDestination {
 
+  protected $_source_migrations = array();
+
+
+  public function __construct() {
+
+    // get node migrations for lookup.
+    $this->_source_migrations[] = Migration::getInstance('D6StoryNode');
+    $this->_source_migrations[] = Migration::getInstance('D6StatusNode');
+    $this->_source_migrations[] = Migration::getInstance('D6PageNode');
+    $this->_source_migrations[] = Migration::getInstance('D6NewsNode');
+    $this->_source_migrations[] = Migration::getInstance('D6HowDoNode');
+    $this->_source_migrations[] = Migration::getInstance('D6ServiceNode');
+    $this->_source_migrations[] = Migration::getInstance('D6AdditionalInfoNode');
+    $this->_source_migrations[] = Migration::getInstance('D6TutorialNode');
+    $this->_source_migrations[] = Migration::getInstance('D6CategoryDescriptionNode');
+    $this->_source_migrations[] = Migration::getInstance('D6ProjectNode');
+    $this->_source_migrations[] = Migration::getInstance('D6ProjectStatusNode');
+    $this->_source_migrations[] = Migration::getInstance('D6PolicyNode');
+    $this->_source_migrations[] = Migration::getInstance('D6TeamNode');
+  }
+
   /**
    * @return array
    */
@@ -108,11 +128,11 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
   /**
    * @override
    * @see MigrateDestination::import()
+   *
    * @param stdClass $object
    * @param stdClass $row
    * @return array the id of the migrated redirect record.
-   *
-   * @todo Adjust internal node paths. [ST 2014/05/05]
+   * @throws MigrateException
    */
   public function import(stdClass $object, stdClass $row) {
 
@@ -127,6 +147,19 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
     redirect_object_prepare($redirect, $redirect_defaults);
     $redirect->redirect = $row->redirect;
     $redirect->source = $row->source;
+
+    // update internal node paths.
+    // this assumes that all node migrations have already run.
+    if (0 === strpos($redirect->redirect, 'node/')) {
+      if (false === ($redirect->redirect = $this->_getMigratedNodePath($redirect->redirect))) {
+        throw new MigrateException('Not found.', Migration::MESSAGE_NOTICE);
+      }
+    }
+    if (0 === strpos($redirect->source, 'node/')) {
+      if (false === ($redirect->redirect = $this->_getMigratedNodePath($redirect->source))) {
+        throw new MigrateException('Not found.', Migration::MESSAGE_NOTICE);
+      }
+    }
 
     // save the redirect.
     redirect_save($redirect);
@@ -144,6 +177,30 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
     migrate_instrument_start('redirect_delete_multiple');
     redirect_delete_multiple($rids);
     migrate_instrument_stop('redirect_delete_multiple');
+  }
+
+  /**
+   * Retrieves the migrated internal path of a node for its given source path.
+   * @param string $path The internal node path in the migration source.
+   * @return string|boolean The node path in the migration destination, or FALSE if no path could be determined.
+   */
+  protected function _getMigratedNodePath($path) {
+    $source_nid = (int) str_replace('node/', '', $path);
+    $dest_nid = FALSE;
+    // KLUDGE!
+    // Iterate over node migrations and peel out the destination node id for each given node path.
+    // Stop on first match.
+    // Kinda inefficient, but "good enough for government work".
+    // [ST 2015/05/05]
+    foreach ($this->_source_migrations as $source_migration) {
+      $destids = $source_migration->getMap()->lookupDestinationID(array($source_nid));
+      if (! empty($destids['destid1'])) {
+        $dest_nid = $destids['destid1'];
+        break;
+      }
+    }
+    // return the internal path.
+    return 'node/' . $dest_nid;
   }
 }
 
