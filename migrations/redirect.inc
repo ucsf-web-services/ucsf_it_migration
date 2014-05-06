@@ -14,15 +14,6 @@ class UcsfItRedirectMigration extends DrupalMigration {
 
     $this->sourceFields = array(
       'rid' => t('Redirect ID'),
-/*
-      'source' => t('The source path'),
-      'redirect' => t('The redirect destination path'),
-      'query' => t('Query parameters'),
-      'fragment' => t('Hash tag'),
-      'language' => t('Language key'),
-      'type' => t('HTTP response code'),
-      'last_used' => t('Last used timestamp'),
-*/
     );
 
     parent::__construct($arguments);
@@ -44,6 +35,8 @@ class UcsfItRedirectMigration extends DrupalMigration {
       ),
       UcsfItRedirectMigrationDestination::getKeySchema()
     ));
+
+    $this->addUnmigratedSources(array('source', 'redirect', 'query', 'fragment', 'language', 'type', 'last_used'));
   }
 
   /**
@@ -120,8 +113,7 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
    */
   public function fields($migration = NULL) {
 
-    $fields = array('rid', 'hash', 'uid', 'source', 'source_options', 'redirect', 'redirect_options', 'language', 'status_code', 'count', 'access');
-    return $fields;
+    return array();
 
   }
 
@@ -147,6 +139,7 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
     redirect_object_prepare($redirect, $redirect_defaults);
     $redirect->redirect = $row->redirect;
     $redirect->source = $row->source;
+    $redirect->status_code = $row->type;
 
     // update internal node paths.
     // this assumes that all node migrations have already run.
