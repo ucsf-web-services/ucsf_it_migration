@@ -28,10 +28,13 @@ class UcsfItStatusNode6Migration extends UcsfItNode6Migration {
     // reason/impact/resolution
     $this->addFieldMapping('field_it_status_reason', 'field_reason');
     $this->addFieldMapping('field_it_status_reason:language')->defaultValue('und');
+    $this->addFieldMapping('field_it_status_reason:format')->defaultValue('webedit');
     $this->addFieldMapping('field_it_status_impact', 'field_impact');
     $this->addFieldMapping('field_it_status_impact:language')->defaultValue('und');
+    $this->addFieldMapping('field_it_status_impact:format')->defaultValue('webedit');
     $this->addFieldMapping('field_it_status_resolution', 'field_status_resolution');
     $this->addFieldMapping('field_it_status_resolution:language')->defaultValue('und');
+    $this->addFieldMapping('field_it_status_resolution:format')->defaultValue('webedit');
 
     // map private flag
     $this->addFieldMapping('field_it_status_private', 'field_private');
