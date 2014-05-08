@@ -10,6 +10,7 @@
  * @see DrupalNode6Migration
  */
 abstract class UcsfItNode6Migration extends DrupalNode6Migration {
+
   /**
    * @param array $arguments
    */
@@ -25,6 +26,19 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
       'upload:weight', 'format'));
 
     $this->addFieldMapping('body:format', NULL, FALSE)->defaultValue('webedit');
+  }
+
+  /**
+   * @param $row
+   * @return bool
+   *
+   * @see DrupalNodeMigration::prepareRow()
+   */
+  public function prepareRow($row) {
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    $row->body = $this->convertAbsoluteToRelativeUrls($row->body);
   }
 
   /**
@@ -175,5 +189,15 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
     else {
       return FALSE;
     }
+  }
+
+  /**
+   * In given text, convert all absolute urls containing the "it.ucsf.edu" domain name to relative urls.
+   * @param string $text The text to modify.
+   * @return string The modified text.
+   */
+  protected function convertAbsoluteToRelativeUrls($text) {
+    $text = preg_replace('/https?:\/\/it.ucsf.edu\//i', '/', $text);
+    return $text;
   }
 }
