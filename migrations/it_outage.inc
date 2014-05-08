@@ -66,6 +66,11 @@ class UcsfItStatusNode6Migration extends UcsfItNode6Migration {
       $row->field_private = 0;
     } else {
       $row->field_private = 1;
-     }
+    }
+
+    // convert absolute to relative urls
+    $row->field_it_status_reason = $this->convertAbsoluteToRelativeUrls($row->field_it_status_reason);
+    $row->field_it_status_impact = $this->convertAbsoluteToRelativeUrls($row->field_it_status_impact);
+    $row->field_it_status_resolution = $this->convertAbsoluteToRelativeUrls($row->field_it_status_resolution);
   }
 }

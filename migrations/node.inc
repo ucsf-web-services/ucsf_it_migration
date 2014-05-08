@@ -29,6 +29,19 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
   }
 
   /**
+   * @param $row
+   * @return bool
+   *
+   * @see DrupalNodeMigration::prepareRow()
+   */
+  public function prepareRow($row) {
+    if (parent::prepareRow($row) === FALSE) {
+      return FALSE;
+    }
+    $row->body = $this->convertAbsoluteToRelativeUrls($row->body);
+  }
+
+  /**
    * @see DrupalNodeMigration::query()
    * @return SelectQueryInterface
    */
