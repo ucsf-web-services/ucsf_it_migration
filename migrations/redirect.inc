@@ -8,6 +8,11 @@
 class UcsfItRedirectMigration extends DrupalMigration {
 
   /**
+   * @var array
+   */
+  protected $_node_migrations = array();
+
+  /**
    * @param array $arguments
    */
   public function __construct($arguments) {
@@ -18,11 +23,26 @@ class UcsfItRedirectMigration extends DrupalMigration {
 
     parent::__construct($arguments);
 
+    // get node migrations for lookup.
+    $this->_node_migrations[] = Migration::getInstance('D6StoryNode');
+    $this->_node_migrations[] = Migration::getInstance('D6StatusNode');
+    $this->_node_migrations[] = Migration::getInstance('D6PageNode');
+    $this->_node_migrations[] = Migration::getInstance('D6NewsNode');
+    $this->_node_migrations[] = Migration::getInstance('D6HowDoNode');
+    $this->_node_migrations[] = Migration::getInstance('D6ServiceNode');
+    $this->_node_migrations[] = Migration::getInstance('D6AdditionalInfoNode');
+    $this->_node_migrations[] = Migration::getInstance('D6TutorialNode');
+    $this->_node_migrations[] = Migration::getInstance('D6CategoryDescriptionNode');
+    $this->_node_migrations[] = Migration::getInstance('D6ProjectNode');
+    $this->_node_migrations[] = Migration::getInstance('D6ProjectStatusNode');
+    $this->_node_migrations[] = Migration::getInstance('D6PolicyNode');
+    $this->_node_migrations[] = Migration::getInstance('D6TeamNode');
+
     // Create our three main objects - source, destination, and map
     $this->setSource(new MigrateSourceSQL($this->query(), $this->sourceFields,
       NULL, $this->sourceOptions));
 
-    $this->setDestination(new UcsfItRedirectMigrationDestination());
+    $this->setDestination(new UcsfItRedirectMigrationDestination($this->_node_migrations));
 
     $this->setMap(new MigrateSQLMap($this->machineName,
       array(
@@ -57,25 +77,15 @@ class UcsfItRedirectMigration extends DrupalMigration {
  */
 class UcsfItRedirectMigrationDestination extends MigrateDestination {
 
-  protected $_source_migrations = array();
+  /**
+   * @var array
+   */
+  protected $_node_migrations;
 
 
-  public function __construct() {
+  public function __construct(array $node_migrations) {
 
-    // get node migrations for lookup.
-    $this->_source_migrations[] = Migration::getInstance('D6StoryNode');
-    $this->_source_migrations[] = Migration::getInstance('D6StatusNode');
-    $this->_source_migrations[] = Migration::getInstance('D6PageNode');
-    $this->_source_migrations[] = Migration::getInstance('D6NewsNode');
-    $this->_source_migrations[] = Migration::getInstance('D6HowDoNode');
-    $this->_source_migrations[] = Migration::getInstance('D6ServiceNode');
-    $this->_source_migrations[] = Migration::getInstance('D6AdditionalInfoNode');
-    $this->_source_migrations[] = Migration::getInstance('D6TutorialNode');
-    $this->_source_migrations[] = Migration::getInstance('D6CategoryDescriptionNode');
-    $this->_source_migrations[] = Migration::getInstance('D6ProjectNode');
-    $this->_source_migrations[] = Migration::getInstance('D6ProjectStatusNode');
-    $this->_source_migrations[] = Migration::getInstance('D6PolicyNode');
-    $this->_source_migrations[] = Migration::getInstance('D6TeamNode');
+    $this->_node_migrations = $node_migrations;
   }
 
   /**
@@ -185,8 +195,8 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
     // Stop on first match.
     // Kinda inefficient, but "good enough for government work".
     // [ST 2015/05/05]
-    foreach ($this->_source_migrations as $source_migration) {
-      $destids = $source_migration->getMap()->lookupDestinationID(array($source_nid));
+    foreach ($this->_node_migrations as $node_migration) {
+      $destids = $node_migration->getMap()->lookupDestinationID(array($source_nid));
       if (! empty($destids['destid1'])) {
         $dest_nid = $destids['destid1'];
         break;
