@@ -60,6 +60,30 @@ class UcsfItRedirectMigration extends DrupalMigration {
   }
 
   /**
+   * Runs after migration completes.
+   *
+   * We use it here to do one more pass over all migrated nodes and adjust internal node paths in the content itself.
+   * This is terribly hacky, but since this migration is intended to run after all the node migrations have been
+   * processed, it's not the worst of all places.
+   *
+   * @see Migration::postImport()
+   */
+  public function postImport() {
+    parent::postImport();
+
+    // @todo implement [ST 2014/05/08]
+
+    /*
+    Plan of action:
+    --------------
+    1. get all node bodies
+    2. loop through them, for each one
+    3a.   find internal node paths and replace the source nids with their migrated counterparts
+    3b.   save all node bodies back.
+    */
+  }
+
+  /**
    * The base source query for this migration.
    *
    * @return QueryConditionInterface
