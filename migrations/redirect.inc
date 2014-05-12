@@ -217,7 +217,6 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
     // KLUDGE!
     // Iterate over node migrations and peel out the destination node id for each given node path.
     // Stop on first match.
-    // Kinda inefficient, but "good enough for government work".
     // [ST 2015/05/05]
     foreach ($this->_node_migrations as $node_migration) {
       $destids = $node_migration->getMap()->lookupDestinationID(array($source_nid));
