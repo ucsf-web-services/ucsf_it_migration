@@ -60,6 +60,18 @@ class UcsfItRedirectMigration extends DrupalMigration {
   }
 
   /**
+   * The base source query for this migration.
+   *
+   * @return QueryConditionInterface
+   */
+  protected function query() {
+    $query = Database::getConnection('default', $this->sourceConnection)
+      ->select('path_redirect', 'pr')
+      ->fields('pr', array('rid', 'source', 'redirect', 'query', 'fragment', 'language', 'type', 'last_used'));
+    return $query;
+  }
+
+  /**
    * Runs after migration completes.
    *
    * We use it here to do one more pass over all migrated nodes and adjust internal node paths in the content itself.
@@ -71,28 +83,85 @@ class UcsfItRedirectMigration extends DrupalMigration {
   public function postImport() {
     parent::postImport();
 
-    // @todo implement [ST 2014/05/08]
-
     /*
     Plan of action:
     --------------
-    1. get all node bodies
+    1. get all node bodies/summaries
     2. loop through them, for each one
-    3a.   find internal node paths and replace the source nids with their migrated counterparts
-    3b.   save all node bodies back.
+    2a.   find internal node paths and replace the source node-ids with their migrated counterparts
+    2b.   save all node bodies back.
     */
+
+    // 1.
+    $node_contents = $this->_get_node_bodies();
+    // 2.
+    foreach ($node_contents as $nid => $content) {
+      $body_hash = md5($content['body_value']);
+      $summary_hash = md5($content['body_summary']);
+      // 2a.
+      $updated_body = $this->_fix_internal_node_paths($content['body_value']);
+      $updated_summary = $this->_fix_internal_node_paths($content['body_summary']);
+      if (strcmp($body_hash, md5($updated_body) || strcmp($summary_hash, md5($updated_summary)))) { // has anything changed?
+        // 2b.
+        $this->_update_node_body($nid, $content['vid'], $updated_body, $updated_summary);
+      }
+    }
   }
 
   /**
-   * The base source query for this migration.
-   *
-   * @return QueryConditionInterface
+   * Updates the body and summary for a given node revision.
+   * @param int $nid The node id
+   * @param int $vid The revision id.
+   * @param string $body The node body.
+   * @param string $summary The node summary.
    */
-  protected function query() {
-    $query = Database::getConnection('default', $this->sourceConnection)
-      ->select('path_redirect', 'pr')
-      ->fields('pr', array('rid', 'source', 'redirect', 'query', 'fragment', 'language', 'type', 'last_used'));
-    return $query;
+  private function _update_node_body($nid, $vid, $body, $summary) {
+    $sql=<<< EOL
+UPDATE {field_data_body}
+SET body_value = %s, body_summary = %s
+WHERE entity_id = %d AND revision_id = %d AND entity_type = 'node'
+EOL;
+    db_query($sql, array($body, $summary, $nid, $vid));
+  }
+
+  /**
+   * Retrieves all node bodies/summaries.
+   * @return array An associative array of arrays, keyed off by node id.
+   *  Each item is an associative array itself, containing the following items:
+   *    'vid'          ... The node's revision id.
+   *    'body_value'   ... The node body.
+   *    'body_summary' ... The body summary.
+   */
+  private function _get_node_bodies() {
+    $rhett = array();
+    $sql =<<< EOL
+SELECT nr.nid, nr.vid, f.body_value, f.body_summary
+FROM {node} n
+LEFT JOIN {node_revision} nr ON n.vid = nr.vid
+LEFT JOIN {field_data_body} f ON f.revision_id = nr.vid AND f.entity_id = nr.nid
+WHERE f.entity_type = 'node'
+EOL;
+
+    $result = db_query($sql);
+    foreach ($result as  $row) {
+      $rhett[$row->nid] = array(
+        'body_value' => $row->body_value,
+        'body_summary' => $row->body_summary,
+        'vid' => $row->vid,
+      );
+    }
+    return $result;
+  }
+
+  /**
+   * Replaces internal node paths from the migration source in a given markup text
+   * with their equivalents in the migration destination.
+   * @param string $text The markup to modify.
+   * @return string The modified markup.
+   */
+  protected function _fix_internal_node_paths ($text) {
+    // @todo Implement [ST 2014/05/12]
+    return $text;
   }
 }
 
