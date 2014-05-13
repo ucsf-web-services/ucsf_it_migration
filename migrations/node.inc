@@ -25,7 +25,7 @@ abstract class UcsfItNode6Migration extends DrupalNode6Migration {
     $this->addUnmigratedSources(array('revision', 'revision_uid', 'log', 'upload', 'upload:description', 'upload:list',
       'upload:weight', 'format'));
 
-    $this->addFieldMapping('body:format', NULL, FALSE)->defaultValue('webedit');
+    $this->addFieldMapping('body:format', NULL, FALSE)->defaultValue('full_html');
   }
 
   /**
