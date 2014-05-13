@@ -165,11 +165,43 @@ EOL;
    * Replaces internal node paths from the migration source in a given markup text
    * with their equivalents in the migration destination.
    * @param string $text The markup to modify.
-   * @return string The modified markup.
+   * @return string The updated markup.
    */
-  protected function _fix_internal_node_paths ($text) {
-    // @todo Implement [ST 2014/05/12]
+  private function _fix_internal_node_paths($text) {
+    // quick and dirty search/replace for internal node path pattern
+    $text = preg_replace_callback('"/(?:internal:)?\/?node\/([\\d]+)/i', array($this, '_fix_internal_node_path_pattern'), $text);
     return $text;
+  }
+
+  /**
+   * PREG replace callback function.
+   * @param array $matches The node id is the second array element.
+   * @return string The update node path
+   * @see UcsfItRedirectMigration::_fix_internal_node_paths()
+   */
+  private function _fix_internal_node_path_callback($matches) {
+    $nid = $this->_lookup_migrated_node_id($matches[1]);
+    if (FALSE === $nid) {
+      return $matches[0];
+    }
+    return '"/node/' . $nid;
+  }
+
+  /**
+   * For a given source node id, find and return the corresponding destination node id.
+   * @param int $source_nid The source node id.
+   * @return mixed The corresponding destination node id, or FALSE if none could be found.
+   */
+  private function _lookup_migrated_node_id ($source_nid) {
+    $dest_nid = FALSE;
+    foreach ($this->_node_migrations as $node_migration) {
+      $destids = $node_migration->getMap()->lookupDestinationID(array($source_nid));
+      if (! empty($destids['destid1'])) {
+        $dest_nid = $destids['destid1'];
+        break;
+      }
+    }
+    return $dest_nid;
   }
 }
 
