@@ -142,6 +142,12 @@ FROM {node} n
 LEFT JOIN {node_revision} nr ON n.vid = nr.vid
 LEFT JOIN {field_data_body} f ON f.revision_id = nr.vid AND f.entity_id = nr.nid
 WHERE f.entity_type = 'node'
+AND (
+  f.body_value LIKE '%internal:node%'
+  OR f.body_value LIKE '%"/node/%'
+  OR f.body_summary LIKE '%internal:node%'
+  OR f.body_summary LIKE '%"/node/%'
+)
 EOL;
 
     $result = db_query($sql);
