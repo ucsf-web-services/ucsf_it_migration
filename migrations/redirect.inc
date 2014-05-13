@@ -101,7 +101,9 @@ class UcsfItRedirectMigration extends DrupalMigration {
       // 2a.
       $updated_body = $this->_fix_internal_node_paths($content['body_value']);
       $updated_summary = $this->_fix_internal_node_paths($content['body_summary']);
-      if (strcmp($body_hash, md5($updated_body) || strcmp($summary_hash, md5($updated_summary)))) { // has anything changed?
+      $updated_body_hash = md5($updated_body);
+      $updated_summary_hash = md5($updated_summary);
+      if (strcmp($body_hash, $updated_body_hash) || strcmp($summary_hash, $updated_summary_hash)) { // has anything changed?
         // 2b.
         $this->_update_node_body($nid, $content['vid'], $updated_body, $updated_summary);
       }
@@ -150,7 +152,7 @@ EOL;
         'vid' => $row->vid,
       );
     }
-    return $result;
+    return $rhett;
   }
 
   /**
