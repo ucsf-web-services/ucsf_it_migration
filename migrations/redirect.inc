@@ -118,12 +118,14 @@ class UcsfItRedirectMigration extends DrupalMigration {
    * @param string $summary The node summary.
    */
   private function _update_node_body($nid, $vid, $body, $summary) {
-    $sql=<<< EOL
-UPDATE {field_data_body}
-SET body_value = %s, body_summary = %s
-WHERE entity_id = %d AND revision_id = %d AND entity_type = 'node'
-EOL;
-    db_query($sql, array($body, $summary, $nid, $vid));
+    db_update('field_data_body')
+      ->fields(array(
+        'body_value' => $body,
+        'body_summary' => $summary
+      ))
+      ->condition('entity_id', (int) $nid, '=')
+      ->condition('revision_id', (int) $vid, '=')
+      ->execute();
   }
 
   /**
@@ -169,7 +171,7 @@ EOL;
    */
   private function _fix_internal_node_paths($text) {
     // quick and dirty search/replace for internal node path pattern
-    $text = preg_replace_callback('"/(?:internal:)?\/?node\/([\\d]+)/i', array($this, '_fix_internal_node_path_pattern'), $text);
+    $text = preg_replace_callback('/"(?:internal:)?\/?node\/([\\d]+)/i', array($this, '_fix_internal_node_path_callback'), $text);
     return $text;
   }
 
