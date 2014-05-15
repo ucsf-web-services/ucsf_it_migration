@@ -8,6 +8,11 @@
 class UcsfItRedirectMigration extends DrupalMigration {
 
   /**
+   * @var array
+   */
+  protected $_node_migrations = array();
+
+  /**
    * @param array $arguments
    */
   public function __construct($arguments) {
@@ -18,11 +23,26 @@ class UcsfItRedirectMigration extends DrupalMigration {
 
     parent::__construct($arguments);
 
+    // get node migrations for lookup.
+    $this->_node_migrations[] = Migration::getInstance('D6StoryNode');
+    $this->_node_migrations[] = Migration::getInstance('D6StatusNode');
+    $this->_node_migrations[] = Migration::getInstance('D6PageNode');
+    $this->_node_migrations[] = Migration::getInstance('D6NewsNode');
+    $this->_node_migrations[] = Migration::getInstance('D6HowDoNode');
+    $this->_node_migrations[] = Migration::getInstance('D6ServiceNode');
+    $this->_node_migrations[] = Migration::getInstance('D6AdditionalInfoNode');
+    $this->_node_migrations[] = Migration::getInstance('D6TutorialNode');
+    $this->_node_migrations[] = Migration::getInstance('D6CategoryDescriptionNode');
+    $this->_node_migrations[] = Migration::getInstance('D6ProjectNode');
+    $this->_node_migrations[] = Migration::getInstance('D6ProjectStatusNode');
+    $this->_node_migrations[] = Migration::getInstance('D6PolicyNode');
+    $this->_node_migrations[] = Migration::getInstance('D6TeamNode');
+
     // Create our three main objects - source, destination, and map
     $this->setSource(new MigrateSourceSQL($this->query(), $this->sourceFields,
       NULL, $this->sourceOptions));
 
-    $this->setDestination(new UcsfItRedirectMigrationDestination());
+    $this->setDestination(new UcsfItRedirectMigrationDestination($this->_node_migrations));
 
     $this->setMap(new MigrateSQLMap($this->machineName,
       array(
@@ -50,6 +70,141 @@ class UcsfItRedirectMigration extends DrupalMigration {
       ->fields('pr', array('rid', 'source', 'redirect', 'query', 'fragment', 'language', 'type', 'last_used'));
     return $query;
   }
+
+  /**
+   * Runs after migration completes.
+   *
+   * We use it here to do one more pass over all migrated nodes and adjust internal node paths in the content itself.
+   * This is terribly hacky, but since this migration is intended to run after all the node migrations have been
+   * processed, it's not the worst of all places.
+   *
+   * @see Migration::postImport()
+   */
+  public function postImport() {
+    parent::postImport();
+
+    /*
+    Plan of action:
+    --------------
+    1. get all node bodies/summaries
+    2. loop through them, for each one
+    2a.   find internal node paths and replace the source node-ids with their migrated counterparts
+    2b.   save all node bodies back.
+    */
+
+    // 1.
+    $node_contents = $this->_get_node_bodies();
+    // 2.
+    foreach ($node_contents as $nid => $content) {
+      $body_hash = md5($content['body_value']);
+      $summary_hash = md5($content['body_summary']);
+      // 2a.
+      $updated_body = $this->_fix_internal_node_paths($content['body_value']);
+      $updated_summary = $this->_fix_internal_node_paths($content['body_summary']);
+      $updated_body_hash = md5($updated_body);
+      $updated_summary_hash = md5($updated_summary);
+      if (strcmp($body_hash, $updated_body_hash) || strcmp($summary_hash, $updated_summary_hash)) { // has anything changed?
+        // 2b.
+        $this->_update_node_body($nid, $content['vid'], $updated_body, $updated_summary);
+      }
+    }
+  }
+
+  /**
+   * Updates the body and summary for a given node revision.
+   * @param int $nid The node id
+   * @param int $vid The revision id.
+   * @param string $body The node body.
+   * @param string $summary The node summary.
+   */
+  private function _update_node_body($nid, $vid, $body, $summary) {
+    db_update('field_data_body')
+      ->fields(array(
+        'body_value' => $body,
+        'body_summary' => $summary
+      ))
+      ->condition('entity_id', (int) $nid, '=')
+      ->condition('revision_id', (int) $vid, '=')
+      ->execute();
+  }
+
+  /**
+   * Retrieves all node bodies/summaries.
+   * @return array An associative array of arrays, keyed off by node id.
+   *  Each item is an associative array itself, containing the following items:
+   *    'vid'          ... The node's revision id.
+   *    'body_value'   ... The node body.
+   *    'body_summary' ... The body summary.
+   */
+  private function _get_node_bodies() {
+    $rhett = array();
+    $sql =<<< EOL
+SELECT nr.nid, nr.vid, f.body_value, f.body_summary
+FROM {node} n
+LEFT JOIN {node_revision} nr ON n.vid = nr.vid
+LEFT JOIN {field_data_body} f ON f.revision_id = nr.vid AND f.entity_id = nr.nid
+WHERE f.entity_type = 'node'
+AND (
+  f.body_value LIKE '%internal:node%'
+  OR f.body_value LIKE '%"/node/%'
+  OR f.body_summary LIKE '%internal:node%'
+  OR f.body_summary LIKE '%"/node/%'
+)
+EOL;
+
+    $result = db_query($sql);
+    foreach ($result as  $row) {
+      $rhett[$row->nid] = array(
+        'body_value' => $row->body_value,
+        'body_summary' => $row->body_summary,
+        'vid' => $row->vid,
+      );
+    }
+    return $rhett;
+  }
+
+  /**
+   * Replaces internal node paths from the migration source in a given markup text
+   * with their equivalents in the migration destination.
+   * @param string $text The markup to modify.
+   * @return string The updated markup.
+   */
+  private function _fix_internal_node_paths($text) {
+    // quick and dirty search/replace for internal node path pattern
+    $text = preg_replace_callback('/"(?:internal:)?\/?node\/([\\d]+)/i', array($this, '_fix_internal_node_path_callback'), $text);
+    return $text;
+  }
+
+  /**
+   * PREG replace callback function.
+   * @param array $matches The node id is the second array element.
+   * @return string The update node path
+   * @see UcsfItRedirectMigration::_fix_internal_node_paths()
+   */
+  private function _fix_internal_node_path_callback($matches) {
+    $nid = $this->_lookup_migrated_node_id($matches[1]);
+    if (FALSE === $nid) {
+      return $matches[0];
+    }
+    return '"/node/' . $nid;
+  }
+
+  /**
+   * For a given source node id, find and return the corresponding destination node id.
+   * @param int $source_nid The source node id.
+   * @return mixed The corresponding destination node id, or FALSE if none could be found.
+   */
+  private function _lookup_migrated_node_id ($source_nid) {
+    $dest_nid = FALSE;
+    foreach ($this->_node_migrations as $node_migration) {
+      $destids = $node_migration->getMap()->lookupDestinationID(array($source_nid));
+      if (! empty($destids['destid1'])) {
+        $dest_nid = $destids['destid1'];
+        break;
+      }
+    }
+    return $dest_nid;
+  }
 }
 
 /**
@@ -57,25 +212,15 @@ class UcsfItRedirectMigration extends DrupalMigration {
  */
 class UcsfItRedirectMigrationDestination extends MigrateDestination {
 
-  protected $_source_migrations = array();
+  /**
+   * @var array
+   */
+  protected $_node_migrations;
 
 
-  public function __construct() {
+  public function __construct(array $node_migrations) {
 
-    // get node migrations for lookup.
-    $this->_source_migrations[] = Migration::getInstance('D6StoryNode');
-    $this->_source_migrations[] = Migration::getInstance('D6StatusNode');
-    $this->_source_migrations[] = Migration::getInstance('D6PageNode');
-    $this->_source_migrations[] = Migration::getInstance('D6NewsNode');
-    $this->_source_migrations[] = Migration::getInstance('D6HowDoNode');
-    $this->_source_migrations[] = Migration::getInstance('D6ServiceNode');
-    $this->_source_migrations[] = Migration::getInstance('D6AdditionalInfoNode');
-    $this->_source_migrations[] = Migration::getInstance('D6TutorialNode');
-    $this->_source_migrations[] = Migration::getInstance('D6CategoryDescriptionNode');
-    $this->_source_migrations[] = Migration::getInstance('D6ProjectNode');
-    $this->_source_migrations[] = Migration::getInstance('D6ProjectStatusNode');
-    $this->_source_migrations[] = Migration::getInstance('D6PolicyNode');
-    $this->_source_migrations[] = Migration::getInstance('D6TeamNode');
+    $this->_node_migrations = $node_migrations;
   }
 
   /**
@@ -183,10 +328,9 @@ class UcsfItRedirectMigrationDestination extends MigrateDestination {
     // KLUDGE!
     // Iterate over node migrations and peel out the destination node id for each given node path.
     // Stop on first match.
-    // Kinda inefficient, but "good enough for government work".
     // [ST 2015/05/05]
-    foreach ($this->_source_migrations as $source_migration) {
-      $destids = $source_migration->getMap()->lookupDestinationID(array($source_nid));
+    foreach ($this->_node_migrations as $node_migration) {
+      $destids = $node_migration->getMap()->lookupDestinationID(array($source_nid));
       if (! empty($destids['destid1'])) {
         $dest_nid = $destids['destid1'];
         break;
