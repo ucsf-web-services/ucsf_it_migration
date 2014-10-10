@@ -1,0 +1,1 @@
+This directory contains an assortment of scripts that were used to run the content migration, as well as routine tasks such as syncing the various remote environments with the local dev/migration environment.
